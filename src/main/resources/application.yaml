@@ -1,0 +1,18 @@
+spring.application.name:
+  Event Finder
+
+server:
+  port: 5000
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/eventdb
+    username: postgres
+    password: admin
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  profiles:
+    active: dev
