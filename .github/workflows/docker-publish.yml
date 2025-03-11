@@ -1,0 +1,87 @@
+name: Build and Deploy to ECS (Public ECR)
+
+on:
+  push:
+    branches: [ main ]  # triggers on every push
+
+env:
+  AWS_REGION: us-west-2
+  ECR_PUBLIC_REPOSITORY: public.ecr.aws/r1b3l1w9/giftedlabs/eventfinder
+  ECS_CLUSTER: eventfinder-cluster
+  ECS_SERVICE: eventfinder-service
+  ECS_TASK_DEFINITION: .aws/task-definition.json
+  CONTAINER_NAME: eventfinder  # Ensure this matches your ECS container name
+
+jobs:
+  build-and-push:
+    name: Build and Push Docker Image to Public ECR
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1) Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2) Configure AWS Credentials (Public ECR is in us-west-2)
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # 3) Login to Amazon ECR Public (Global)
+      - name: Login to Amazon ECR Public
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registry-type: public
+
+      # 4) Build the Docker image (No need to build with Maven separately)
+      - name: Build Docker Image
+        run: |
+          docker build -t eventfinder . 
+
+      # 5) Tag and push the image to the Public ECR repository
+      - name: Tag and Push Image to Public ECR
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker tag eventfinder:latest $ECR_PUBLIC_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_PUBLIC_REPOSITORY:$IMAGE_TAG
+          docker tag $ECR_PUBLIC_REPOSITORY:$IMAGE_TAG $ECR_PUBLIC_REPOSITORY:latest
+          docker push $ECR_PUBLIC_REPOSITORY:latest
+
+  deploy:
+    name: Deploy to ECS in us-west-2
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ env.ECR_PUBLIC_REPOSITORY }}:${{ github.sha }}
+
+      - name: Deploy Amazon ECS Task Definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+          codedeploy-appspec: .aws/appspec.yml
+          codedeploy-application: eventfinder-app
+          codedeploy-deployment-group: eventfinder-deployment-group
