@@ -54,4 +54,15 @@ public class S3Service {
 
         return "images/"+ timestamp + "_" + UUID.randomUUID().toString()+extension;
     }
+
+    public void deleteFile(String fileUrl){
+        try{
+            String key = fileUrl.substring(fileUrl.lastIndexOf("/")+ 1);
+            s3Client.deleteObject(bucketName, key);
+            log.error("Deleted file with key: {}",key);
+        }
+        catch (Exception e){
+            log.error("Error deleting file from S3: {}", e.getMessage());
+        }
+    }
 }
