@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @RestController
@@ -63,8 +65,8 @@ public class EventController {
         EventDTO eventDTO = new EventDTO();
         eventDTO.setName(name);
         eventDTO.setDescription(description);
-        eventDTO.setStartTime(LocalDateTime.parse(startTime));
-        eventDTO.setEndTime(LocalDateTime.parse(endTime));
+        eventDTO.setStartTime(Instant.parse(startTime).atZone(ZoneId.systemDefault()).toLocalDateTime());
+        eventDTO.setEndTime(Instant.parse(endTime).atZone(ZoneId.systemDefault()).toLocalDateTime());
         eventDTO.setLocation(location);
         eventDTO.setCity(city);
         eventDTO.setState(state);

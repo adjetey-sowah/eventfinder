@@ -294,35 +294,50 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Handle event form submission
+    // Image preview for file input
+    const imageInput = document.getElementById('image');
+    const imagePreview = document.getElementById('image-preview');
+
+    if (imageInput) {
+        imageInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                    imagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                imagePreview.innerHTML = '';
+                imagePreview.style.display = 'none';
+            }
+        });
+    }
+
+    // Handle event form submission with file upload
     document.getElementById('event-form').addEventListener('submit', function(e) {
         e.preventDefault();
 
-        const formData = {
-            name: document.getElementById('name').value,
-            description: document.getElementById('description').value,
-            startTime: document.getElementById('startTime').value,
-            endTime: document.getElementById('endTime').value,
-            location: document.getElementById('location').value,
-            city: document.getElementById('city').value,
-            state: document.getElementById('state').value,
-            country: document.getElementById('country').value,
-            latitude: document.getElementById('latitude').value || null,
-            longitude: document.getElementById('longitude').value || null,
-            capacity: parseInt(document.getElementById('capacity').value),
-            category: document.getElementById('category').value,
-            organizerName: document.getElementById('organizerName').value || null,
-            organizerContact: document.getElementById('organizerContact').value || null,
-            imageUrl: document.getElementById('imageUrl').value || null,
-            isActive: true
-        };
+        const formData = new FormData(this);
 
-        fetch('/api/events', {
+        // Convert datetime to ISO format
+        const startTimeInput = document.getElementById('startTime');
+        const endTimeInput = document.getElementById('endTime');
+
+        if (startTimeInput.value) {
+            const startDate = new Date(startTimeInput.value);
+            formData.set('startTime', startDate.toISOString());
+        }
+
+        if (endTimeInput.value) {
+            const endDate = new Date(endTimeInput.value);
+            formData.set('endTime', endDate.toISOString());
+        }
+
+        fetch('/api/events/with-image', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
+            body: formData
         })
             .then(response => {
                 if (!response.ok) {
@@ -333,6 +348,8 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 alert('Event created successfully!');
                 document.getElementById('event-form').reset();
+                imagePreview.innerHTML = '';
+                imagePreview.style.display = 'none';
                 showSection(upcomingEventsSection, upcomingEventsLink);
                 loadUpcomingEvents();
             })
@@ -345,6 +362,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Cancel add event button
     document.getElementById('cancel-add-event').addEventListener('click', function() {
         document.getElementById('event-form').reset();
+        const imagePreview = document.getElementById('image-preview');
+        if (imagePreview) {
+            imagePreview.innerHTML = '';
+            imagePreview.style.display = 'none';
+        }
         showSection(upcomingEventsSection, upcomingEventsLink);
     });
 

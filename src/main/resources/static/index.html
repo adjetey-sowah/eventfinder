@@ -38,9 +38,10 @@
     </section>
 
     <!-- Add Event Section -->
+    <!-- Add Event Section -->
     <section id="add-event-section" class="section hidden">
         <h2>Add New Event</h2>
-        <form id="event-form">
+        <form id="event-form" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="name">Event Name*</label>
                 <input type="text" id="name" name="name" required>
@@ -124,8 +125,11 @@
             </div>
 
             <div class="form-group">
-                <label for="imageUrl">Image URL</label>
-                <input type="url" id="imageUrl" name="imageUrl">
+                <label for="image">Event Image</label>
+                <div class="file-input-container">
+                    <input type="file" id="image" name="image" accept="image/*">
+                    <div class="image-preview" id="image-preview"></div>
+                </div>
             </div>
 
             <div class="form-actions">

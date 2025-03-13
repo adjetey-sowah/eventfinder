@@ -34,7 +34,7 @@ public class S3Service {
 
         s3Client.putObject(
                 new PutObjectRequest(bucketName,filename,file.getInputStream(), metadata)
-                        .withCannedAcl(CannedAccessControlList.PublicRead)
+
         );
         return s3Client.getUrl(bucketName,filename).toString();
     }
@@ -42,8 +42,9 @@ public class S3Service {
 
     private String generateFileName (MultipartFile file){
         // Create a unique file name with timestamp and UUID
+        LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-        String timestamp = LocalDateTime.now().format(formatter);
+        String timestamp = now.format(formatter);
 
         String originalFileName = file.getOriginalFilename();
         String extension = "";
