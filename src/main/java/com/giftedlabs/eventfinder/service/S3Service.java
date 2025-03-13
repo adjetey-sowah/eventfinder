@@ -1,7 +1,10 @@
 package com.giftedlabs.eventfinder.service;
 
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
@@ -56,14 +60,28 @@ public class S3Service {
         return "images/"+ timestamp + "_" + UUID.randomUUID().toString()+extension;
     }
 
-    public void deleteFile(String fileUrl){
-        try{
-            String key = fileUrl.substring(fileUrl.lastIndexOf("/")+ 1);
-            s3Client.deleteObject(bucketName, key);
-            log.error("Deleted file with key: {}",key);
-        }
-        catch (Exception e){
-            log.error("Error deleting file from S3: {}", e.getMessage());
+    public void deleteFile(String fileUrl) {
+        try {
+            // Convert URL to URI to properly extract the key
+            URI uri = new URI(fileUrl);
+
+            // Extract the key while ensuring it keeps the folder structure (removing the leading '/')
+            String key = uri.getPath().startsWith("/") ? uri.getPath().substring(1) : uri.getPath();
+
+            // Log the extracted key
+            log.info("Attempting to delete file from S3 - Bucket: {}, Key: {}", bucketName, key);
+
+            // Delete the object from S3
+            s3Client.deleteObject(new DeleteObjectRequest(bucketName, key));
+
+            log.info("Successfully deleted file with key: {}", key);
+        } catch (AmazonServiceException e) {
+            log.error("AWS Service Error: {}", e.getMessage());
+        } catch (SdkClientException e) {
+            log.error("AWS SDK Error: {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("General Error deleting file from S3: {}", e.getMessage());
         }
     }
+
 }

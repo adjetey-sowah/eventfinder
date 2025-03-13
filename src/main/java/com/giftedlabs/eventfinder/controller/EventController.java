@@ -8,6 +8,7 @@ import com.giftedlabs.eventfinder.service.EventService;
 import com.giftedlabs.eventfinder.service.S3Service;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -29,9 +30,14 @@ public class EventController {
     private final EventService eventService;
     private final S3Service s3Service;
 
-    @GetMapping
-    public ResponseEntity<List<EventDTO>> getAllEvents() {
-        return ResponseEntity.ok(eventService.getAllEvents());
+    @GetMapping("/page")
+    public ResponseEntity<Page<EventDTO>> getAllEvents(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "date,asc") String sort
+    ) {
+        Page<EventDTO> events = eventService.getAllEvents(page,size,sort);
+        return ResponseEntity.ok(events);
     }
 
     @GetMapping("/{id}")
@@ -118,8 +124,8 @@ public class EventController {
         EventDTO eventDTO = new EventDTO();
         eventDTO.setName(name);
         eventDTO.setDescription(description);
-        eventDTO.setStartTime(LocalDateTime.parse(startTime));
-        eventDTO.setEndTime(LocalDateTime.parse(endTime));
+        eventDTO.setStartTime(Instant.parse(startTime).atZone(ZoneId.systemDefault()).toLocalDateTime());
+        eventDTO.setEndTime(Instant.parse(endTime).atZone(ZoneId.systemDefault()).toLocalDateTime());
         eventDTO.setLocation(location);
         eventDTO.setCity(city);
         eventDTO.setState(state);

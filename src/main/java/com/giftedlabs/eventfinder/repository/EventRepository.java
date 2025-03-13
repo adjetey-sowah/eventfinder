@@ -3,6 +3,8 @@ package com.giftedlabs.eventfinder.repository;
 
 import com.giftedlabs.eventfinder.model.Event;
 import com.giftedlabs.eventfinder.model.EventCategory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,6 +15,8 @@ import java.util.List;
 
 @Repository
 public interface EventRepository extends JpaRepository<Event, Long> {
+
+    Page<Event> findAll(Pageable pageable);
 
     List<Event> findByCity(String city);
 

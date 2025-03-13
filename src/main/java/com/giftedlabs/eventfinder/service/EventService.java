@@ -10,10 +10,14 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 
+import java.awt.print.Pageable;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,12 +30,15 @@ public class EventService {
     private final EventRepository eventRepository;
     private final S3Service s3Service;
 
-    public List<EventDTO> getAllEvents() {
-        return eventRepository.findAll()
-                .stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+    public Page<EventDTO> getAllEvents(int page, int size, String sort) {
+        String[] sortParams = sort.split(",");
+        Sort sortBy = (sortParams.length == 2)
+                ? Sort.by(Sort.Direction.fromString(sortParams[1]), sortParams[0])
+                : Sort.by(Sort.Direction.ASC, "date"); // Default sorting
+
+        return eventRepository.findAll(PageRequest.of(page, size, sortBy)).map(this::convertToDTO);
     }
+
 
     public EventDTO getEventById(Long id) {
         Event event = eventRepository.findById(id)

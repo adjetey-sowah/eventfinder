@@ -5,15 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Event Management</title>
     <link rel="stylesheet" href="css/styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
 <header>
     <div class="container">
-        <h1>EventFinder</h1>
+        <h1><i class="fas fa-calendar-check"></i> EventFinder</h1>
         <nav>
             <ul>
                 <li><a href="#" class="active" id="upcoming-events-link">Upcoming Events</a></li>
+                <li><a href="#" id="all-events-link">All Events</a></li>
                 <li><a href="#" id="add-event-link">Add Event</a></li>
                 <li><a href="#" id="search-events-link">Search Events</a></li>
             </ul>
@@ -24,179 +26,231 @@
 <main class="container">
     <!-- Upcoming Events Section -->
     <section id="upcoming-events-section" class="section">
-        <h2>Upcoming Events</h2>
-        <div class="filter-container">
-            <select id="category-filter">
-                <option value="">All Categories</option>
-            </select>
-            <input type="text" id="location-filter" placeholder="City, State or Country">
-            <button id="filter-button">Filter</button>
+        <div class="section-header">
+            <h2>Upcoming Events</h2>
+            <div class="filter-container">
+                <select id="category-filter" class="select-styled">
+                    <option value="">All Categories</option>
+                </select>
+                <input type="text" id="location-filter" placeholder="City, State or Country" class="input-styled">
+                <button id="filter-button" class="btn-filter"><i class="fas fa-filter"></i> Filter</button>
+            </div>
         </div>
         <div class="events-container" id="events-list">
             <!-- Events will be loaded dynamically here -->
         </div>
     </section>
 
-    <!-- Add Event Section -->
-    <!-- Add Event Section -->
-    <section id="add-event-section" class="section hidden">
-        <h2>Add New Event</h2>
-        <form id="event-form" enctype="multipart/form-data">
-            <div class="form-group">
-                <label for="name">Event Name*</label>
-                <input type="text" id="name" name="name" required>
-            </div>
-
-            <div class="form-group">
-                <label for="description">Description</label>
-                <textarea id="description" name="description" rows="4"></textarea>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="startTime">Start Date & Time*</label>
-                    <input type="datetime-local" id="startTime" name="startTime" required>
+    <!-- All Events Section -->
+    <section id="all-events-section" class="section hidden">
+        <div class="section-header">
+            <h2>All Events</h2>
+            <div class="filter-sort-container">
+                <div class="filter-group">
+                    <select id="all-category-filter" class="select-styled">
+                        <option value="">All Categories</option>
+                    </select>
+                    <select id="event-status-filter" class="select-styled">
+                        <option value="ALL">All Events</option>
+                        <option value="UPCOMING">Upcoming</option>
+                        <option value="PAST">Past</option>
+                    </select>
                 </div>
 
-                <div class="form-group">
-                    <label for="endTime">End Date & Time*</label>
-                    <input type="datetime-local" id="endTime" name="endTime" required>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="location">Location/Venue*</label>
-                <input type="text" id="location" name="location" required>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="city">City*</label>
-                    <input type="text" id="city" name="city" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="state">State*</label>
-                    <input type="text" id="state" name="state" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="country">Country*</label>
-                    <input type="text" id="country" name="country" required>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="latitude">Latitude</label>
-                    <input type="number" id="latitude" name="latitude" step="0.000001">
-                </div>
-
-                <div class="form-group">
-                    <label for="longitude">Longitude</label>
-                    <input type="number" id="longitude" name="longitude" step="0.000001">
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="capacity">Capacity*</label>
-                    <input type="number" id="capacity" name="capacity" required min="1">
-                </div>
-
-                <div class="form-group">
-                    <label for="category">Category*</label>
-                    <select id="category" name="category" required>
-                        <!-- Categories will be loaded dynamically -->
+                <div class="sort-group">
+                    <label for="sort-by">Sort by:</label>
+                    <select id="sort-by" class="select-styled">
+                        <option value="startTime,desc">Date (Newest First)</option>
+                        <option value="startTime,asc">Date (Oldest First)</option>
+                        <option value="name,asc">Name (A-Z)</option>
+                        <option value="name,desc">Name (Z-A)</option>
                     </select>
                 </div>
             </div>
+        </div>
 
-            <div class="form-row">
+        <div class="events-container" id="all-events-list">
+            <!-- All events will be loaded dynamically here -->
+        </div>
+
+        <div class="pagination-container">
+            <button id="prev-page" class="pagination-btn" disabled><i class="fas fa-chevron-left"></i> Previous</button>
+            <div id="page-indicators" class="page-indicators">
+                <!-- Page indicators will be generated here -->
+            </div>
+            <button id="next-page" class="pagination-btn">Next <i class="fas fa-chevron-right"></i></button>
+        </div>
+    </section>
+
+    <!-- Add Event Section -->
+    <section id="add-event-section" class="section hidden">
+        <div class="section-header">
+            <h2 id="event-form-title">Add New Event</h2>
+        </div>
+        <div class="card form-card">
+            <form id="event-form" enctype="multipart/form-data">
+                <input type="hidden" id="event-id" name="id">
                 <div class="form-group">
-                    <label for="organizerName">Organizer Name</label>
-                    <input type="text" id="organizerName" name="organizerName">
+                    <label for="name">Event Name*</label>
+                    <input type="text" id="name" name="name" class="input-styled" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="organizerContact">Organizer Contact</label>
-                    <input type="text" id="organizerContact" name="organizerContact">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="4" class="input-styled"></textarea>
                 </div>
-            </div>
 
-            <div class="form-group">
-                <label for="image">Event Image</label>
-                <div class="file-input-container">
-                    <input type="file" id="image" name="image" accept="image/*">
-                    <div class="image-preview" id="image-preview"></div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="startTime">Start Date & Time*</label>
+                        <input type="datetime-local" id="startTime" name="startTime" class="input-styled" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="endTime">End Date & Time*</label>
+                        <input type="datetime-local" id="endTime" name="endTime" class="input-styled" required>
+                    </div>
                 </div>
-            </div>
 
-            <div class="form-actions">
-                <button type="submit" class="btn-primary">Save Event</button>
-                <button type="button" class="btn-secondary" id="cancel-add-event">Cancel</button>
-            </div>
-        </form>
+                <div class="form-group">
+                    <label for="location">Location/Venue*</label>
+                    <input type="text" id="location" name="location" class="input-styled" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="city">City*</label>
+                        <input type="text" id="city" name="city" class="input-styled" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="state">State*</label>
+                        <input type="text" id="state" name="state" class="input-styled" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="country">Country*</label>
+                        <input type="text" id="country" name="country" class="input-styled" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="latitude">Latitude</label>
+                        <input type="number" id="latitude" name="latitude" step="0.000001" class="input-styled">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="longitude">Longitude</label>
+                        <input type="number" id="longitude" name="longitude" step="0.000001" class="input-styled">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="capacity">Capacity*</label>
+                        <input type="number" id="capacity" name="capacity" required min="1" class="input-styled">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Category*</label>
+                        <select id="category" name="category" class="select-styled" required>
+                            <!-- Categories will be loaded dynamically -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="organizerName">Organizer Name</label>
+                        <input type="text" id="organizerName" name="organizerName" class="input-styled">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="organizerContact">Organizer Contact</label>
+                        <input type="text" id="organizerContact" name="organizerContact" class="input-styled">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="image">Event Image</label>
+                    <div class="file-input-container">
+                        <input type="file" id="image" name="image" accept="image/*" class="file-input">
+                        <label for="image" class="file-input-label"><i class="fas fa-upload"></i> Choose File</label>
+                        <div class="image-preview" id="image-preview"></div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary" id="save-event-btn"><i class="fas fa-save"></i> Save Event</button>
+                    <button type="button" class="btn-secondary" id="cancel-event-btn"><i class="fas fa-times"></i> Cancel</button>
+                </div>
+            </form>
+        </div>
     </section>
 
     <!-- Search Events Section -->
     <section id="search-events-section" class="section hidden">
-        <h2>Search Events</h2>
+        <div class="section-header">
+            <h2>Search Events</h2>
+        </div>
         <div class="search-options">
-            <div class="search-by-location">
-                <h3>Search by Location</h3>
+            <div class="search-card">
+                <h3><i class="fas fa-map-marker-alt"></i> Search by Location</h3>
                 <form id="location-search-form">
                     <div class="form-row">
                         <div class="form-group">
                             <label for="search-city">City</label>
-                            <input type="text" id="search-city">
+                            <input type="text" id="search-city" class="input-styled">
                         </div>
 
                         <div class="form-group">
                             <label for="search-state">State</label>
-                            <input type="text" id="search-state">
+                            <input type="text" id="search-state" class="input-styled">
                         </div>
 
                         <div class="form-group">
                             <label for="search-country">Country</label>
-                            <input type="text" id="search-country">
+                            <input type="text" id="search-country" class="input-styled">
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label for="search-category">Category</label>
-                        <select id="search-category">
+                        <select id="search-category" class="select-styled">
                             <option value="">All Categories</option>
                             <!-- Categories will be loaded dynamically -->
                         </select>
                     </div>
 
-                    <button type="submit" class="btn-primary">Search</button>
+                    <button type="submit" class="btn-primary"><i class="fas fa-search"></i> Search</button>
                 </form>
             </div>
 
-            <div class="search-by-radius">
-                <h3>Search by Radius</h3>
+            <div class="search-card">
+                <h3><i class="fas fa-compass"></i> Search by Radius</h3>
                 <form id="radius-search-form">
                     <div class="form-row">
                         <div class="form-group">
                             <label for="search-latitude">Latitude</label>
-                            <input type="number" id="search-latitude" step="0.000001" required>
+                            <input type="number" id="search-latitude" step="0.000001" class="input-styled" required>
                         </div>
 
                         <div class="form-group">
                             <label for="search-longitude">Longitude</label>
-                            <input type="number" id="search-longitude" step="0.000001" required>
+                            <input type="number" id="search-longitude" step="0.000001" class="input-styled" required>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label for="search-radius">Radius (km)</label>
-                        <input type="number" id="search-radius" min="1" max="500" value="10" required>
+                        <input type="number" id="search-radius" min="1" max="500" value="10" class="input-styled" required>
                     </div>
 
-                    <button type="submit" class="btn-primary">Search</button>
-                    <button type="button" class="btn-secondary" id="use-current-location">Use Current Location</button>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary"><i class="fas fa-search"></i> Search</button>
+                        <button type="button" class="btn-location" id="use-current-location"><i class="fas fa-location-arrow"></i> Use Current Location</button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -216,6 +270,21 @@
             <div id="event-details">
                 <!-- Event details will be loaded dynamically here -->
             </div>
+            <div class="modal-actions" id="event-actions">
+                <!-- Action buttons will be added here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content confirm-modal-content">
+            <h3><i class="fas fa-exclamation-triangle"></i> Confirm Action</h3>
+            <p id="confirm-message">Are you sure you want to proceed?</p>
+            <div class="modal-actions">
+                <button class="btn-danger" id="confirm-yes"><i class="fas fa-trash"></i> Yes, Delete</button>
+                <button class="btn-secondary" id="confirm-no"><i class="fas fa-times"></i> Cancel</button>
+            </div>
         </div>
     </div>
 </main>
@@ -223,6 +292,11 @@
 <footer>
     <div class="container">
         <p>&copy; 2025 EventFinder - Your Local Event Discovery Platform</p>
+        <div class="social-links">
+            <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+            <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        </div>
     </div>
 </footer>
 
