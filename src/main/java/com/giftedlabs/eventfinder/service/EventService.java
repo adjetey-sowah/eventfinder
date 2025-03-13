@@ -7,11 +7,14 @@ import com.giftedlabs.eventfinder.model.Event;
 import com.giftedlabs.eventfinder.model.EventCategory;
 import com.giftedlabs.eventfinder.repository.EventRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,6 +24,7 @@ import java.util.stream.Collectors;
 public class EventService {
 
     private final EventRepository eventRepository;
+    private final S3Service s3Service;
 
     public List<EventDTO> getAllEvents() {
         return eventRepository.findAll()
@@ -42,9 +46,14 @@ public class EventService {
         return convertToDTO(savedEvent);
     }
 
+    @Transactional
     public EventDTO updateEvent(Long id, EventDTO eventDTO) {
-        if (!eventRepository.existsById(id)) {
-            throw new EntityNotFoundException("Event not found with id: " + id);
+        Event existingEvent = eventRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Event not found with id: "+ id));
+
+        // If imageUrl is null the DTO but exists in the entity, keep the existing one
+        if (eventDTO.getImageUrl() == null && existingEvent.getImageUrl() != null){
+            eventDTO.setImageUrl(existingEvent.getImageUrl());
         }
 
         Event event = convertToEntity(eventDTO);
@@ -53,11 +62,33 @@ public class EventService {
         return convertToDTO(updatedEvent);
     }
 
+    @Transactional
     public void deleteEvent(Long id) {
-        if (!eventRepository.existsById(id)) {
-            throw new EntityNotFoundException("Event not found with id: " + id);
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Event not found with id: " + id));
+
+        // Delete image from S3 if exists
+        if (event.getImageUrl() != null){
+            s3Service.deleteFile(event.getImageUrl());
         }
+
         eventRepository.deleteById(id);
+    }
+
+    public String uploadEventImage(Long eventId, MultipartFile file) throws IOException {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new EntityNotFoundException("Event not found with id: " + eventId));
+
+        // Delete old image if exists
+        if (event.getImageUrl() != null){
+            s3Service.deleteFile(event.getImageUrl());
+        }
+
+        String imageUrl = s3Service.uploadFile(file);
+        event.setImageUrl(imageUrl);
+        eventRepository.save(event);
+
+        return imageUrl;
     }
 
     public List<EventDTO> getUpcomingEvents() {
