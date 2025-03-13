@@ -46,6 +46,7 @@ public class Event {
     @NotBlank(message = "Country is required")
     private String country;
 
+    @Column(length = 512)
     private String imageUrl;
 
     private String organizerName;
