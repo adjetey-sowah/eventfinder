@@ -5,12 +5,17 @@ import com.giftedlabs.eventfinder.dto.EventDTO;
 import com.giftedlabs.eventfinder.dto.LocationSearchDTO;
 import com.giftedlabs.eventfinder.model.EventCategory;
 import com.giftedlabs.eventfinder.service.EventService;
+import com.giftedlabs.eventfinder.service.S3Service;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -20,6 +25,7 @@ import java.util.List;
 public class EventController {
 
     private final EventService eventService;
+    private final S3Service s3Service;
 
     @GetMapping
     public ResponseEntity<List<EventDTO>> getAllEvents() {
@@ -36,8 +42,100 @@ public class EventController {
         return new ResponseEntity<>(eventService.createEvent(eventDTO), HttpStatus.CREATED);
     }
 
+    @PostMapping(value = "/with-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<EventDTO> createEventWithImage(
+            @RequestParam("name") String name,
+            @RequestParam("description") String description,
+            @RequestParam("startTime") String startTime,
+            @RequestParam("endTime") String endTime,
+            @RequestParam("location") String location,
+            @RequestParam("city") String city,
+            @RequestParam("state") String state,
+            @RequestParam("country") String country,
+            @RequestParam("category") EventCategory category,
+            @RequestParam("capacity") Integer capacity,
+            @RequestParam(value = "organizerName", required = false) String organizerName,
+            @RequestParam(value = "organizerContact", required = false) String organizerContact,
+            @RequestParam(value = "latitude", required = false) Double latitude,
+            @RequestParam(value = "longitude", required = false) Double longitude,
+            @RequestParam(value = "image", required = false) MultipartFile image) throws IOException {
+
+        EventDTO eventDTO = new EventDTO();
+        eventDTO.setName(name);
+        eventDTO.setDescription(description);
+        eventDTO.setStartTime(LocalDateTime.parse(startTime));
+        eventDTO.setEndTime(LocalDateTime.parse(endTime));
+        eventDTO.setLocation(location);
+        eventDTO.setCity(city);
+        eventDTO.setState(state);
+        eventDTO.setCountry(country);
+        eventDTO.setCategory(category);
+        eventDTO.setCapacity(capacity);
+        eventDTO.setOrganizerName(organizerName);
+        eventDTO.setOrganizerContact(organizerContact);
+        eventDTO.setLatitude(latitude);
+        eventDTO.setLongitude(longitude);
+        eventDTO.setIsActive(true);
+
+        // Upload image to S3 if provided
+        if (image != null && !image.isEmpty()) {
+            String imageUrl = s3Service.uploadFile(image);
+            eventDTO.setImageUrl(imageUrl);
+        }
+
+        return new ResponseEntity<>(eventService.createEvent(eventDTO), HttpStatus.CREATED);
+    }
+
+
+
     @PutMapping("/{id}")
     public ResponseEntity<EventDTO> updateEvent(@PathVariable Long id, @Valid @RequestBody EventDTO eventDTO) {
+        return ResponseEntity.ok(eventService.updateEvent(id, eventDTO));
+    }
+
+
+    @PutMapping(value = "/{id}/with-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<EventDTO> updateEventWithImage(
+            @PathVariable Long id,
+            @RequestParam("name") String name,
+            @RequestParam("description") String description,
+            @RequestParam("startTime") String startTime,
+            @RequestParam("endTime") String endTime,
+            @RequestParam("location") String location,
+            @RequestParam("city") String city,
+            @RequestParam("state") String state,
+            @RequestParam("country") String country,
+            @RequestParam("category") EventCategory category,
+            @RequestParam("capacity") Integer capacity,
+            @RequestParam(value = "organizerName", required = false) String organizerName,
+            @RequestParam(value = "organizerContact", required = false) String organizerContact,
+            @RequestParam(value = "latitude", required = false) Double latitude,
+            @RequestParam(value = "longitude", required = false) Double longitude,
+            @RequestParam(value = "image", required = false) MultipartFile image) throws IOException {
+
+        EventDTO eventDTO = new EventDTO();
+        eventDTO.setName(name);
+        eventDTO.setDescription(description);
+        eventDTO.setStartTime(LocalDateTime.parse(startTime));
+        eventDTO.setEndTime(LocalDateTime.parse(endTime));
+        eventDTO.setLocation(location);
+        eventDTO.setCity(city);
+        eventDTO.setState(state);
+        eventDTO.setCountry(country);
+        eventDTO.setCategory(category);
+        eventDTO.setCapacity(capacity);
+        eventDTO.setOrganizerName(organizerName);
+        eventDTO.setOrganizerContact(organizerContact);
+        eventDTO.setLatitude(latitude);
+        eventDTO.setLongitude(longitude);
+        eventDTO.setIsActive(true);
+
+        // Upload image to S3 if provided
+        if (image != null && !image.isEmpty()) {
+            String imageUrl = s3Service.uploadFile(image);
+            eventDTO.setImageUrl(imageUrl);
+        }
+
         return ResponseEntity.ok(eventService.updateEvent(id, eventDTO));
     }
 
