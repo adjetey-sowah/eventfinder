@@ -12,11 +12,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.services.s3.S3Client;
 
 import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -26,8 +29,9 @@ public class S3Service {
 
     private final AmazonS3 s3Client;
 
-    @Value("${aws.bucketName}")
+    @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
+
 
     public String uploadFile(MultipartFile file) throws IOException{
         String filename = generateFileName(file);
