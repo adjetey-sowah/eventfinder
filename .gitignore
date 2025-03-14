@@ -24,6 +24,8 @@ target/
 ### Environment files ###
 .env
 src/main/resources/application-dev.yaml
+.github/workflows/anonyfile.yaml
+.gitignore
 
 
 ### NetBeans ###

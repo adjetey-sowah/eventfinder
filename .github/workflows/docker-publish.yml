@@ -1,8 +1,8 @@
-name: Build and Deploy to ECS (Public ECR)
+name: Build, Push to ECR, and Deploy to ECS
 
 on:
   push:
-    branches: [ main ]  # triggers on every push
+    branches: [ main ]
 
 env:
   AWS_REGION: us-west-2
@@ -10,45 +10,76 @@ env:
   ECS_CLUSTER: eventfinder-cluster
   ECS_SERVICE: eventfinder-service
   ECS_TASK_DEFINITION: .aws/task-definition.json
-  CONTAINER_NAME: eventfinder  # Ensure this matches your ECS container name
+  CONTAINER_NAME: nginx-5000-http
 
 jobs:
-  build-and-push:
-    name: Build and Push Docker Image to Public ECR
+  build-push-deploy:
+    name: Build and Push to ECR and then Deploy to ECS
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Checkout the repository
+      # Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2) Configure AWS Credentials (Public ECR is in us-west-2)
-      - name: Configure AWS Credentials
+      # Configure AWS Credentials (Public ECR is in us-east-1, but your app is in us-west-2)
+      - name: Configure AWS Credentials for ECR Public
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      # 3) Login to Amazon ECR Public (Global)
+      # Login to Amazon ECR Public
       - name: Login to Amazon ECR Public
         uses: aws-actions/amazon-ecr-login@v1
         with:
           registry-type: public
 
-      # 4) Build the Docker image (No need to build with Maven separately)
+      # Build the Docker image
       - name: Build Docker Image
         run: |
-          docker build -t eventfinder . 
+          docker build -t eventfinder .
 
-      # 5) Tag and push the image to the Public ECR repository
+      # Tag and push the image to the Public ECR repository
       - name: Tag and Push Image to Public ECR
         env:
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker tag eventfinder:latest $ECR_PUBLIC_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_PUBLIC_REPOSITORY:$IMAGE_TAG
-          docker tag $ECR_PUBLIC_REPOSITORY:$IMAGE_TAG $ECR_PUBLIC_REPOSITORY:latest
-          docker push $ECR_PUBLIC_REPOSITORY:latest
+          docker tag eventfinder:latest ${{ env.ECR_PUBLIC_REPOSITORY }}:$IMAGE_TAG
+          docker push ${{ env.ECR_PUBLIC_REPOSITORY }}:$IMAGE_TAG
+          docker tag ${{ env.ECR_PUBLIC_REPOSITORY }}:$IMAGE_TAG ${{ env.ECR_PUBLIC_REPOSITORY }}:latest
+          docker push ${{ env.ECR_PUBLIC_REPOSITORY }}:latest
+          echo "::set-output name=image::${{ env.ECR_PUBLIC_REPOSITORY }}:$IMAGE_TAG"
 
-  
+      # Reconfigure AWS credentials for ECS deployment (us-west-2)
+      - name: Configure AWS Credentials for ECS
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+
+      # Fill in the new image ID in the Amazon ECS task definition
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ env.ECR_PUBLIC_REPOSITORY }}:${{ github.sha }}
+
+      # Register the new task definition
+      - name: Register the new task definition
+        run: |
+          aws ecs register-task-definition --cli-input-json file://${{ steps.task-def.outputs.task-definition }}
+
+      # Start deployment via CodeDeploy
+      - name: Start CodeDeploy deployment
+        run: |
+          aws deploy create-deployment \
+            --application-name eventfinder-app \
+            --deployment-group-name eventfinder-deployment-group \
+            --revision "revisionType=AppSpecContent,appSpecContent={content='$(cat .aws/appspec.yaml | base64)'}" \
+            --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
+            --description "Deployment triggered by GitHub Actions"
