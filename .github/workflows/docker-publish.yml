@@ -80,6 +80,6 @@ jobs:
           aws deploy create-deployment \
             --application-name AppECS-EventFinder-eventfinder-updated \
             --deployment-group-name eventfinder-deployment-group \
-            --revision "revisionType=AppSpecContent,appSpecContent={content='$(cat .aws/appspec.yaml | base64)'}" \
+            --revision "revisionType=AppSpecContent,appSpecContent={content='$(cat .aws/appspec.json | base64)'}" \
             --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
             --description "Deployment triggered by GitHub Actions"
