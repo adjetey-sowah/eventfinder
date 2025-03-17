@@ -77,7 +77,7 @@ jobs:
       # Start deployment via CodeDeploy
       - name: Start CodeDeploy deployment
         run: |
-          CONTENT=$(cat appspec.yaml)
+          CONTENT=$(cat appspec.json)
           SHA256=$(echo -n "$CONTENT" | openssl dgst -sha256 -binary | openssl enc -base64 -A)
           aws deploy create-deployment \
             --application-name AppECS-Event-Cluster-eventfinder-service \
