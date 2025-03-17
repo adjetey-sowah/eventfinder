@@ -71,8 +71,32 @@ jobs:
 
       # Register the new task definition
       - name: Register the new task definition
+        id: register_task_definition
         run: |
-          aws ecs register-task-definition --cli-input-json file://${{ steps.task-def.outputs.task-definition }}
+          TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://${{ steps.task-def.outputs.task-definition }} --query 'taskDefinition.taskDefinitionArn' --output text)
+          echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
+
+
+      - name: Create AppSpec file
+        run: |
+          cat > appspec.yaml << 'EOF'
+          version: 0.0
+          Resources:
+          - TargetService:
+             Type: AWS::ECS::Service
+             Properties:
+               TaskDefinition: "${TASK_DEF_ARN}"
+               LoadBalancerInfo:
+                 ContainerName: "nginx"
+                 ContainerPort: 5000
+               PlatformVersion: "LATEST"
+          EOF
+          
+          # Replace placeholder with actual task definition ARN
+          sed -i "s|\${TASK_DEF_ARN}|${{ steps.task-def.outputs.task_definition_arn }}|g" appspec.yaml
+          
+          # Print AppSpec for debugging
+          cat appspec.yaml
 
       # Update the appspec.yaml file with the new task definition ARN
       - name: Update AppSpec File
