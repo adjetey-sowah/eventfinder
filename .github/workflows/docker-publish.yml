@@ -77,7 +77,8 @@ jobs:
       # Update the appspec.yaml file with the new task definition ARN
       - name: Update AppSpec File
         run: |
-          sed -i "s|<TASK_DEFINITION>|${{ env.TASK_DEFINITION }}|g" appspec.yamldd .
+          sed -i "s|<TASK_DEFINITION>|${{ env.TASK_DEFINITION }}|g" appspec.yaml
+
 
       # Start deployment via CodeDeploy
       - name: Start CodeDeploy deployment
