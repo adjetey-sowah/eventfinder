@@ -98,19 +98,23 @@ jobs:
           # Print AppSpec for debugging
           cat appspec.yaml
 
-      # Update the appspec.yaml file with the new task definition ARN
-      - name: Update AppSpec File
-        run: |
-          sed -i "s|<TASK_DEFINITION>|${{ env.TASK_DEFINITION }}|g" appspec.yaml
-
 
       # Start deployment via CodeDeploy
           # Start deployment via CodeDeploy
-      - name: Start CodeDeploy deployment
+      - name: Start CodeDeploy Deployment
         run: |
-          aws deploy create-deployment \
-            --application-name AppECS-Event-Cluster-eventfinder-service \
-            --deployment-group-name eventfinder-deployment-group \
-            --revision "revisionType=AppSpecContent,appSpecContent={content='$(cat appspec.yaml | base64)'}" \
-            --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
-            --description "Deployment triggered by GitHub Actions"
+            DEPLOYMENT_ID=$(aws deploy create-deployment \
+              --application-name AppECS-Event-Cluster-eventfinder-service \
+              --deployment-group-name eventfinder-deployment-group \
+              --revision revisionType=AppSpecContent,appSpecContent="{content='$(cat appspec.yaml)'}" \
+              --description "Automated deployment via GitHub Actions" \
+              --query 'deploymentId' \
+              --output text)
+            
+            echo "Started deployment: $DEPLOYMENT_ID"
+            
+            # Monitor deployment - don't wait for completion to avoid GitHub Action timeouts
+            aws deploy get-deployment --deployment-id $DEPLOYMENT_ID
+            
+            echo "Deployment ID: $DEPLOYMENT_ID"
+            echo "Monitor the deployment progress in AWS CodeDeploy console"
