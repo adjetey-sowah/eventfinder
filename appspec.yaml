@@ -3,22 +3,32 @@ Resources:
   - TargetService:
       Type: AWS::ECS::Service
       Properties:
-        TaskDefinition: <TASK_DEFINITION> # Replace with your task ARN
+        TaskDefinition: <TASK_DEFINITION>
         LoadBalancerInfo:
           TargetGroups:
-            - name: "eventfinder-tg-blue"  # Original (blue) target group
-            - name: "eventfinder-tg-green" # New (green) target group
+            - name: "eventfinder-tg-blue"
+            - name: "eventfinder-tg-green"
           ContainerName: "nginx"
           ContainerPort: 5000
         PlatformVersion: "LATEST"
 Hooks:
   - BeforeInstall:
-      - Location: "arn:aws:lambda:us-west-2:650251709711:function:LLambdaFunctionToValidateBeforeInstall"
+      - Location: "arn:aws:lambda:us-west-2:***:function:LLambdaFunctionToValidateBeforeInstall"
+        Timeout: 300
+        RoleArn: "arn:aws:iam::***:role/ecsTaskExecutionRole"
   - AfterInstall:
-      - Location: "arn:aws:lambda:us-west-2:650251709711:function:LambdaFunctionToValidateAfterInstall"
+      - Location: "arn:aws:lambda:us-west-2:***:function:LambdaFunctionToValidateAfterInstall"
+        Timeout: 300
+        RoleArn: "arn:aws:iam::***:role/ecsTaskExecutionRole"
   - AfterAllowTestTraffic:
-      - Location: "arn:aws:lambda:us-west-2:650251709711:function:LambdaFunctionToValidateAfterTestTrafficStarts"
+      - Location: "arn:aws:lambda:us-west-2:***:function:LambdaFunctionToValidateAfterTestTrafficStarts"
+        Timeout: 300
+        RoleArn: "arn:aws:iam::***:role/ecsTaskExecutionRole"
   - BeforeAllowTraffic:
-      - Location: "arn:aws:lambda:us-west-2:650251709711:function:LambdaFunctionToValidateBeforeAllowingProductionTraffic"
+      - Location: "arn:aws:lambda:us-west-2:***:function:LambdaFunctionToValidateBeforeAllowingProductionTraffic"
+        Timeout: 300
+        RoleArn: "arn:aws:iam::***:role/ecsTaskExecutionRole"
   - AfterAllowTraffic:
-      - Location: "arn:aws:lambda:us-west-2:650251709711:function:LambdaFunctionToValidateAfterAllowingProductionTraffic"
+      - Location: "arn:aws:lambda:us-west-2:***:function:LambdaFunctionToValidateAfterAllowingProductionTraffic"
+        Timeout: 300
+        RoleArn: "arn:aws:iam::***:role/ecsTaskExecutionRole"
