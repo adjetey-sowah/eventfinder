@@ -77,9 +77,16 @@ jobs:
       # Start deployment via CodeDeploy
       - name: Start CodeDeploy deployment
         run: |
+          sha256=$(openssl dgst -sha256 -binary appspec.yaml | openssl enc -base64 -A)
           aws deploy create-deployment \
             --application-name AppECS-EventFinder-Cluster-eventfinder-service \
             --deployment-group-name eventfinder-deployment-group \
-            --revision "revisionType=AppSpecContent,appSpecContent={content='$(cat .aws/appspec.yaml | base64)'}" \
+            --revision '{
+              "revisionType": "AppSpecContent",
+              "appSpecContent": {
+                "content": "'$(cat appspec.yaml | base64 -w 0)'",
+                "sha256": "'$sha256'"
+              }
+            }' \
             --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
             --description "Deployment triggered by GitHub Actions"

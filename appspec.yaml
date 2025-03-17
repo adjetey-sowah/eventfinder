@@ -3,7 +3,7 @@ Resources:
   - TargetService:
       Type: AWS::ECS::Service
       Properties:
-        TaskDefinition: "arn:aws:ecs:us-west-2:650251709711:task-definition/eventfinder-definition:11"  # Replace with your task ARN
+        TaskDefinition: <TASK_DEFINITION> # Replace with your task ARN
         LoadBalancerInfo:
           TargetGroups:
             - name: "eventfinder-tg-blue"  # Original (blue) target group
