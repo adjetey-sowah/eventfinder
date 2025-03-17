@@ -84,14 +84,17 @@ jobs:
           cat > appspec.yaml << 'EOF'
           version: 0.0
           Resources:
-          - TargetService: "${TASK_DEF_ARN}"
-             Type: AWS::ECS::Service
-             Properties:
-               TaskDefinition: ${TASK_DEF_ARN}
-               LoadBalancerInfo:
-                 ContainerName: "nginx"
-                 ContainerPort: 5000
-               PlatformVersion: "LATEST"
+            - TargetService:
+                Type: AWS::ECS::Service
+                Properties:
+                  TaskDefinition: "${TASK_DEF_ARN}"  # Placeholder to be replaced dynamically
+                  LoadBalancerInfo:
+                    TargetGroups:
+                      - name: "eventfinder-tg-blue"
+                      - name: "eventfinder-tg-green"
+                  ContainerName: "nginx"
+                  ContainerPort: 5000
+                  PlatformVersion: "LATEST"
           EOF
           
           # Replace placeholder with actual task definition ARN
