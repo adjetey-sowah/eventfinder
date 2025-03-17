@@ -85,8 +85,8 @@ jobs:
       - name: Start CodeDeploy deployment
         run: |
           aws deploy create-deployment \
-            --application-name eventfinder-app \
+            --application-name AppECS-Event-Cluster-eventfinder-service \
             --deployment-group-name eventfinder-deployment-group \
-            --revision "revisionType=AppSpecContent,appSpecContent={content='$(cat .aws/appspec.yaml | base64)'}" \
+            --revision "revisionType=AppSpecContent,appSpecContent={content='$(cat appspec.yaml | base64)'}" \
             --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
             --description "Deployment triggered by GitHub Actions"
