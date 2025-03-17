@@ -5,6 +5,7 @@ spring:
     url: jdbc:postgresql://${DB_URL}  # Fetch from environment variables
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
 
 
 cloud:
