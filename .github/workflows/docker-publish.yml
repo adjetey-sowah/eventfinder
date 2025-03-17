@@ -76,7 +76,7 @@ jobs:
           TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://${{ steps.task-def.outputs.task-definition }} --query 'taskDefinition.taskDefinitionArn' --output text)
           echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
           echo "new task =" $TASK_DEF_ARN
-          echo "task definition =" ${{ env.TASK_DEF_ARN }}
+          
 
 
       - name: Create AppSpec file
@@ -84,7 +84,7 @@ jobs:
           cat > appspec.yaml << 'EOF'
           version: 0.0
           Resources:
-          - TargetService:
+          - TargetService: "${TASK_DEF_ARN}"
              Type: AWS::ECS::Service
              Properties:
                TaskDefinition: ${TASK_DEF_ARN}
