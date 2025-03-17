@@ -75,8 +75,8 @@ jobs:
         run: |
           TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://${{ steps.task-def.outputs.task-definition }} --query 'taskDefinition.taskDefinitionArn' --output text)
           echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
-          echo $TASK_DEF_ARN
-          echo ${{ env.TASK_DEF_ARN }}
+          echo "new task =" $TASK_DEF_ARN
+          echo "task definition =" ${{ env.TASK_DEF_ARN }}
 
 
       - name: Create AppSpec file
