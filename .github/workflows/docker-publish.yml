@@ -40,6 +40,24 @@ jobs:
       - name: Build Docker Image
         run: |
           docker build -t eventfinder .
+          
+      # Log in to Private ECR, tag, and push Docker image
+      - name: Log in to AWS Private ECR
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registry-type: private
+
+      - name: Tag and Push Image to Private ECR
+        id: push-image
+        env:
+          ECR_PRIVATE_REPOSITORY: 650251709711.dkr.ecr.us-west-2.amazonaws.com/giftedlab/eventfinder
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker tag eventfinder:latest $ECR_PRIVATE_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_PRIVATE_REPOSITORY:$IMAGE_TAG
+          docker tag $ECR_PRIVATE_REPOSITORY:$IMAGE_TAG $ECR_PRIVATE_REPOSITORY:latest
+          docker push $ECR_PRIVATE_REPOSITORY:latest
+          echo "image=$ECR_PRIVATE_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
       # Tag and push the image to the Public ECR repository
       - name: Tag and Push Image to Public ECR
@@ -52,23 +70,8 @@ jobs:
           docker push ${{ env.ECR_PUBLIC_REPOSITORY }}:latest
           echo "::set-output name=image::${{ env.ECR_PUBLIC_REPOSITORY }}:$IMAGE_TAG"
           
-          # Log in to Private ECR, tag, and push Docker image
-          - name: Log in to AWS Private ECR
-            uses: aws-actions/amazon-ecr-login@v2
-            with:
-              registry-type: private
-
-          - name: Tag and Push Image to Private ECR
-            id: push-image
-            env:
-              ECR_PRIVATE_REPOSITORY: 650251709711.dkr.ecr.us-west-2.amazonaws.com/giftedlab/eventfinder
-              IMAGE_TAG: ${{ github.sha }}
-            run: |
-              docker tag eventfinder:latest $ECR_PRIVATE_REPOSITORY:$IMAGE_TAG
-              docker push $ECR_PRIVATE_REPOSITORY:$IMAGE_TAG
-              docker tag $ECR_PRIVATE_REPOSITORY:$IMAGE_TAG $ECR_PRIVATE_REPOSITORY:latest
-              docker push $ECR_PRIVATE_REPOSITORY:latest
-              echo "image=$ECR_PRIVATE_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          
+          
 
       # Reconfigure AWS credentials for ECS deployment (us-west-2)
       - name: Configure AWS Credentials for ECS
