@@ -70,6 +70,10 @@ jobs:
           # Update the image in the task definition
           jq --arg IMAGE "$IMAGE_URI" '.containerDefinitions[0].image = $IMAGE' task-definition.json > updated-task-def.json
           mv updated-task-def.json task-definition.json
+          
+          # Remove fields that are not allowed during registration
+          jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' task-definition.json > filtered-task-definition.json
+
 
       - name: Deploy to AWS CodeDeploy
         run: |
@@ -79,8 +83,8 @@ jobs:
           CODEDEPLOY_APP=$(aws cloudformation describe-stacks --region us-west-2 --stack-name ECS --query "Stacks[0].Outputs[?OutputKey=='CodeDeployApplication'].OutputValue" --output text)
           CODEDEPLOY_GROUP=$(aws cloudformation describe-stacks --region us-west-2 --stack-name ECS --query "Stacks[0].Outputs[?OutputKey=='CodeDeployDeploymentGroup'].OutputValue" --output text)
           
-          # Register new task definition
-          NEW_TASK_DEF_ARN=$(aws ecs register-task-definition --region us-west-2 --cli-input-json file://task-definition.json --query "taskDefinition.taskDefinitionArn" --output text)
+          # Register new task definition using the filtered JSON
+          NEW_TASK_DEF_ARN=$(aws ecs register-task-definition --region us-west-2 --cli-input-json file://filtered-task-definition.json --query "taskDefinition.taskDefinitionArn" --output text)
           
           # Update appspec with new task definition
           sed -i "s|<TASK_DEFINITION>|$NEW_TASK_DEF_ARN|g" appspec.yaml
