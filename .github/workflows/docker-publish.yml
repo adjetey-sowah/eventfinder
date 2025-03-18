@@ -13,7 +13,7 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     env:
-      ECR_REPOSITORY_URI = public.ecr.aws/r1b3l1w9/giftedlabs/eventfinder:latest
+      ECR_REPOSITORY_URI : public.ecr.aws/r1b3l1w9/giftedlabs/eventfinder:latest
 
     steps:
       - name: Checkout code
