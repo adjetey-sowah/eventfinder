@@ -33,7 +33,7 @@ public class EventController {
     @GetMapping("/page")
     public ResponseEntity<Page<EventDTO>> getAllEvents(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "date,asc") String sort
     ) {
         Page<EventDTO> events = eventService.getAllEvents(page,size,sort);

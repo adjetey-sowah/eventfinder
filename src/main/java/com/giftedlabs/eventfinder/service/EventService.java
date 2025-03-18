@@ -9,6 +9,7 @@ import com.giftedlabs.eventfinder.repository.EventRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EventService {
 
     private final EventRepository eventRepository;
@@ -50,6 +52,7 @@ public class EventService {
         Event event = convertToEntity(eventDTO);
         event.setIsActive(true);
         Event savedEvent = eventRepository.save(event);
+        log.info("From Service Class {}",savedEvent.getImageUrl());
         return convertToDTO(savedEvent);
     }
 
@@ -93,6 +96,7 @@ public class EventService {
 
         String imageUrl = s3Service.uploadFile(file);
         event.setImageUrl(imageUrl);
+        System.out.println("From S3: "+imageUrl);
         eventRepository.save(event);
 
         return imageUrl;

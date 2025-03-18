@@ -8,5 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EventImageDTO {
-    private String imageUrl;
+    private String imageUrl;    // Store the S3 OBJECT key, not the URL
+
 }

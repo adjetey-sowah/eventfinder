@@ -34,6 +34,9 @@ public class S3Service {
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
 
+    // Define your custom URL prefix, e.g., your S3 public URL or custom domain
+    private static final String CUSTOM_URL_PREFIX = "https://eventfinder-bucket.s3.amazonaws.com";
+
 
     public String uploadFile(MultipartFile file) throws IOException {
         String filename = generateFileName(file); // Implement this method to create a unique filename
@@ -52,35 +55,24 @@ public class S3Service {
                 .build();
 
         // Upload the file
-        PutObjectResponse response = s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+        PutObjectResponse response = s3Client
+                .putObject(putObjectRequest, RequestBody
+                        .fromInputStream(file.getInputStream(), file.getSize()));
+
+        log.info("Image URL: {}",CUSTOM_URL_PREFIX + "/" + filename);
 
         // Generate pre-signed URL for accessing the file
-        return generatePresignedUrl(filename);
+        return CUSTOM_URL_PREFIX + "/" + filename;
     }
-
-    private String generatePresignedUrl(String filename) {
-        // Create a pre-signed URL valid for 1 hour
-        GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofHours(1))
-                .getObjectRequest(builder -> builder.bucket(bucketName).key(filename).build())
-                .build();
-
-        PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
-        return presignedRequest.url().toString();
-    }
-
 
 
     private String generateFileName(MultipartFile file) {
         String extension = "";
-
-        // Extract file extension (if available)
         String originalFileName = file.getOriginalFilename();
         if (originalFileName != null && originalFileName.contains(".")) {
             extension = originalFileName.substring(originalFileName.lastIndexOf("."));
         }
-
-        // Generate unique filename using UUID
+        // Generate unique filename using UUID and store it in the "images/" folder
         return "images/" + UUID.randomUUID().toString() + extension;
     }
 
