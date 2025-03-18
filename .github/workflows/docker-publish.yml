@@ -52,7 +52,7 @@ jobs:
           TASK_DEF_FAMILY=$(echo $TASK_DEF_ARN | cut -d'/' -f2 | cut -d':' -f1)
           
           # Create appspec.yaml
-          cat > appspec.yaml << EOF
+          cat > appspec.yaml <<- EOF
           version: 0.0
           Resources:
             - TargetService:
