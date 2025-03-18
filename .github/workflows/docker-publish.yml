@@ -39,7 +39,15 @@ jobs:
           
 
       # Log in to Private ECR, tag, and push Docker image
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+
       - name: Log in to AWS Private ECR
+        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
         with:
           registry-type: private
@@ -54,8 +62,7 @@ jobs:
           docker push $ECR_PRIVATE_REPOSITORY:$IMAGE_TAG
           docker tag $ECR_PRIVATE_REPOSITORY:$IMAGE_TAG $ECR_PRIVATE_REPOSITORY:latest
           docker push $ECR_PRIVATE_REPOSITORY:latest
-          echo "image=$ECR_PRIVATE_REPOSITORY:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
-          
+          echo "image=$ECR_PRIVATE_REPOSITORY:$IMAGE_TAG" >> "$GITHUB_OUTPUT"    
           
             # Login to Amazon ECR Public
       - name: Login to Amazon ECR Public
