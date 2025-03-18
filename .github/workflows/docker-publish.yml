@@ -91,6 +91,6 @@ jobs:
             --region us-west-2  \
             --application-name $CODEDEPLOY_APP \
             --deployment-group-name $CODEDEPLOY_GROUP \
-            --s3-location bucket=eventfinder-bucket,key=deployment.zip,bundleType.zip \
+            --s3-location bucket=eventfinder-bucket,key=deployment.zip,bundleType=zip \
             --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
             --description "Deployment from GitHub Actions"
