@@ -22,21 +22,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Configure AWS Credentials (Public ECR is in us-east-1, but your app is in us-west-2)
-      - name: Configure AWS Credentials for ECR Public
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-
-
       # Build the Docker image
       - name: Build Docker Image
         run: |
           docker build -t eventfinder .
-          
+      
 
       # Log in to Private ECR, tag, and push Docker image
       - name: Configure AWS credentials
@@ -63,12 +53,20 @@ jobs:
           docker tag $ECR_PRIVATE_REPOSITORY:$IMAGE_TAG $ECR_PRIVATE_REPOSITORY:latest
           docker push $ECR_PRIVATE_REPOSITORY:latest
           echo "image=$ECR_PRIVATE_REPOSITORY:$IMAGE_TAG" >> "$GITHUB_OUTPUT"    
-          
-            # Login to Amazon ECR Public
+
+      # Login to Amazon ECR Public
       - name: Login to Amazon ECR Public
         uses: aws-actions/amazon-ecr-login@v1
         with:
           registry-type: public
+
+      # Configure AWS Credentials (Public ECR is in us-east-1, but your app is in us-west-2)
+      - name: Configure AWS Credentials for ECR Public
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
       # Tag and push the image to the Public ECR repository
       - name: Tag and Push Image to Public ECR
@@ -80,9 +78,6 @@ jobs:
           docker tag ${{ env.ECR_PUBLIC_REPOSITORY }}:$IMAGE_TAG ${{ env.ECR_PUBLIC_REPOSITORY }}:latest
           docker push ${{ env.ECR_PUBLIC_REPOSITORY }}:latest
           echo "::set-output name=image::${{ env.ECR_PUBLIC_REPOSITORY }}:$IMAGE_TAG"
-          
-          
-          
 
       # Reconfigure AWS credentials for ECS deployment (us-west-2)
       - name: Configure AWS Credentials for ECS
@@ -108,51 +103,42 @@ jobs:
           TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://${{ steps.task-def.outputs.task-definition }} --query 'taskDefinition.taskDefinitionArn' --output text)
           echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
           echo "new task =" $TASK_DEF_ARN
-          
-
 
       - name: Create AppSpec file
         run: |
-          cat > appspec.yaml << 'EOF'
+          cat > appspec.yaml << EOF
           version: 0.0
           Resources:
             - TargetService:
                 Type: AWS::ECS::Service
                 Properties:
-                  TaskDefinition: arn:aws:ecs:us-west-2:650251709711:task-definition/eventfinder-definition:36
+                  TaskDefinition: $TASK_DEF_ARN
                   LoadBalancerInfo:
                     TargetGroups:
-                      - name: "eventfinder-tg-blue"
-                      - name: "eventfinder-tg-green"
-                  ContainerName: "nginx"
+                  ContainerName: "eventfinder
                   ContainerPort: 5000
                   PlatformVersion: "LATEST"
           EOF
           
-          # Replace placeholder with actual task definition ARN
-          sed -i "s|\${TASK_DEF_ARN}|${{ steps.task-def.outputs.task_definition_arn }}|g" appspec.yaml
-          
           # Print AppSpec for debugging
           cat appspec.yaml
-          echo
-
+        
 
       # Start deployment via CodeDeploy
-          # Start deployment via CodeDeploy
       - name: Start CodeDeploy Deployment
         run: |
-            DEPLOYMENT_ID=$(aws deploy create-deployment \
-              --application-name AppECS-Event-Cluster-eventfinder-service \
-              --deployment-group-name eventfinder-deployment-group \
-              --revision revisionType=AppSpecContent,appSpecContent="{content='$(cat appspec.yaml)'}" \
-              --description "Automated deployment via GitHub Actions" \
-              --query 'deploymentId' \
-              --output text)
-            
-            echo "Started deployment: $DEPLOYMENT_ID"
-            
-            # Monitor deployment - don't wait for completion to avoid GitHub Action timeouts
-            aws deploy get-deployment --deployment-id $DEPLOYMENT_ID
-            
-            echo "Deployment ID: $DEPLOYMENT_ID"
-            echo "Monitor the deployment progress in AWS CodeDeploy console"
+          DEPLOYMENT_ID=$(aws deploy create-deployment \
+            --application-name AppECS-Event-Cluster-eventfinder-service \
+            --deployment-group-name eventfinder-deployment-group \
+            --revision revisionType=AppSpecContent,appSpecContent="{content='$(cat appspec.yaml)'}" \
+            --description "Automated deployment via GitHub Actions" \
+            --query 'deploymentId' \
+            --output text)
+          
+          echo "Started deployment: $DEPLOYMENT_ID"
+          
+          # Monitor deployment - don't wait for completion to avoid GitHub Action timeouts
+          aws deploy get-deployment --deployment-id $DEPLOYMENT_ID
+          
+          echo "Deployment ID: $DEPLOYMENT_ID"
+          echo "Monitor the deployment progress in AWS CodeDeploy console"
