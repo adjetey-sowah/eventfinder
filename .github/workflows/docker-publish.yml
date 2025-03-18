@@ -53,12 +53,7 @@ jobs:
           docker tag $ECR_PRIVATE_REPOSITORY:$IMAGE_TAG $ECR_PRIVATE_REPOSITORY:latest
           docker push $ECR_PRIVATE_REPOSITORY:latest
           echo "image=$ECR_PRIVATE_REPOSITORY:$IMAGE_TAG" >> "$GITHUB_OUTPUT"    
-
-      # Login to Amazon ECR Public
-      - name: Login to Amazon ECR Public
-        uses: aws-actions/amazon-ecr-login@v1
-        with:
-          registry-type: public
+      
 
       # Configure AWS Credentials (Public ECR is in us-east-1, but your app is in us-west-2)
       - name: Configure AWS Credentials for ECR Public
@@ -67,6 +62,13 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
+
+      # Login to Amazon ECR Public
+      - name: Login to Amazon ECR Public
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registry-type: public
+
 
       # Tag and push the image to the Public ECR repository
       - name: Tag and Push Image to Public ECR
