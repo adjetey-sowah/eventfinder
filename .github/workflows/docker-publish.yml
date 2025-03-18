@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout code
-      - uses: actions/checkout@v2
+        uses: actions/checkout@v2
 
       # Configure AWS Credentials (Public ECR is in us-east-1, but your app is in us-west-2)
       - name: Configure AWS Credentials for ECR Public
