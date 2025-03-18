@@ -65,7 +65,7 @@ jobs:
           EOF
           
           # Create task definition JSON
-          aws ecs describe-task-definition --task-definition $TASK_DEF_FAMILY --query "taskDefinition" > task-definition.json
+          aws ecs describe-task-definition --task-definition --region us-west-2 $TASK_DEF_FAMILY --query "taskDefinition" > task-definition.json
           
           # Update the image in the task definition
           jq --arg IMAGE "$IMAGE_URI" '.containerDefinitions[0].image = $IMAGE' task-definition.json > updated-task-def.json
@@ -74,19 +74,20 @@ jobs:
       - name: Deploy to AWS CodeDeploy
         run: |
           # Get deployment details
-          CLUSTER_NAME=$(aws cloudformation describe-stacks --stack-name ECS --query "Stacks[0].Outputs[?OutputKey=='ECSCluster'].OutputValue" --output text)
-          SERVICE_NAME=$(aws cloudformation describe-stacks --stack-name ECS --query "Stacks[0].Outputs[?OutputKey=='ECSService'].OutputValue" --output text)
-          CODEDEPLOY_APP=$(aws cloudformation describe-stacks --stack-name ECS --query "Stacks[0].Outputs[?OutputKey=='CodeDeployApplication'].OutputValue" --output text)
-          CODEDEPLOY_GROUP=$(aws cloudformation describe-stacks --stack-name ECS --query "Stacks[0].Outputs[?OutputKey=='CodeDeployDeploymentGroup'].OutputValue" --output text)
+          CLUSTER_NAME=$(aws cloudformation describe-stacks --region us-west-2 --stack-name ECS --query "Stacks[0].Outputs[?OutputKey=='ECSCluster'].OutputValue" --output text)
+          SERVICE_NAME=$(aws cloudformation describe-stacks --region us-west-2 --stack-name ECS --query "Stacks[0].Outputs[?OutputKey=='ECSService'].OutputValue" --output text)
+          CODEDEPLOY_APP=$(aws cloudformation describe-stacks --region us-west-2 --stack-name ECS --query "Stacks[0].Outputs[?OutputKey=='CodeDeployApplication'].OutputValue" --output text)
+          CODEDEPLOY_GROUP=$(aws cloudformation describe-stacks --region us-west-2 --stack-name ECS --query "Stacks[0].Outputs[?OutputKey=='CodeDeployDeploymentGroup'].OutputValue" --output text)
           
           # Register new task definition
-          NEW_TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://task-definition.json --query "taskDefinition.taskDefinitionArn" --output text)
+          NEW_TASK_DEF_ARN=$(aws ecs register-task-definition --region us-west-2 --cli-input-json file://task-definition.json --query "taskDefinition.taskDefinitionArn" --output text)
           
           # Update appspec with new task definition
           sed -i "s|<TASK_DEFINITION>|$NEW_TASK_DEF_ARN|g" appspec.yaml
           
           # Create deployment
           aws deploy create-deployment \
+            --region us-west-2  \
             --application-name $CODEDEPLOY_APP \
             --deployment-group-name $CODEDEPLOY_GROUP \
             --revision revisionType=AppSpecContent,appSpecContent="{content=\"$(cat appspec.yaml)\"}" \
