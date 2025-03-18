@@ -48,7 +48,7 @@ jobs:
       - name: Create AppSpec and TaskDef files
         run: |
           # Get task definition values
-          TASK_DEF_ARN=$(aws ecs describe-task-definition --task-definition eventfinder-definition --query "taskDefinition.taskDefinitionArn" --output text)
+          TASK_DEF_ARN=$(aws ecs describe-task-definition --region us-west-2 --task-definition eventfinder-definition --query "taskDefinition.taskDefinitionArn" --output text)
           TASK_DEF_FAMILY=$(echo $TASK_DEF_ARN | cut -d'/' -f2 | cut -d':' -f1)
           
           # Create appspec.yaml
