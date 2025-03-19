@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // State variables for pagination
     let currentPage = 0;
     let totalPages = 0;
-    let pageSize = 9;
+    let pageSize = 3;
     let currentSort = "startTime,desc";
     let currentStatus = "ALL";
     let currentCategory = "";
