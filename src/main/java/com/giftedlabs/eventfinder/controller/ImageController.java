@@ -14,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/api/images")
+@RequestMapping(value = "/api/images", headers = "API-VERSION=1")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class ImageController {

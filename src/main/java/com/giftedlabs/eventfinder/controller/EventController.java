@@ -22,7 +22,7 @@ import java.time.ZoneId;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/events")
+@RequestMapping(value = "/api/events")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class EventController {

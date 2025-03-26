@@ -13,7 +13,7 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     env:
-      ECR_REPOSITORY_URI : public.ecr.aws/r1b3l1w9/giftedlabs/eventfinder
+      ECR_REPOSITORY_URI : public.ecr.aws/i3g8s7k5/giftedlabs/eventfinder
 
     steps:
       - name: Checkout code
@@ -45,52 +45,3 @@ jobs:
           echo "IMAGE_URI=${{ env.ECR_REPOSITORY_URI }}:${{ github.sha }}" >> $GITHUB_ENV
 
 
-      - name: Create AppSpec and TaskDef files
-        run: |
-          # Get task definition values
-          TASK_DEF_ARN=$(aws ecs describe-task-definition --region us-west-2 --task-definition eventfinder-definition --query "taskDefinition.taskDefinitionArn" --output text)
-          TASK_DEF_FAMILY=$(echo $TASK_DEF_ARN | cut -d'/' -f2 | cut -d':' -f1)
-          
-          # Create task definition JSON
-          aws ecs describe-task-definition --task-definition $TASK_DEF_FAMILY --region us-west-2 --query "taskDefinition" > task-definition.json
-          
-          # Update the image in the task definition
-          jq --arg IMAGE "$IMAGE_URI" '.containerDefinitions[0].image = $IMAGE' task-definition.json > updated-task-def.json
-          mv updated-task-def.json task-definition.json
-          
-          # Remove fields that are not allowed during registration
-          jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' task-definition.json > filtered-task-definition.json
-
-          # Register new task definition using the filtered JSON
-          NEW_TASK_DEF_ARN=$(aws ecs register-task-definition --region us-west-2 --cli-input-json file://filtered-task-definition.json --query "taskDefinition.taskDefinitionArn" --output text)
-          echo "NEW_TASK_DEF_ARN=$NEW_TASK_DEF_ARN" >> $GITHUB_ENV
-          echo "Registered new task definition: $NEW_TASK_DEF_ARN"
-          
-          # Update the existing appspec.yaml file in the repository root
-          sed -i "s|<TASK_DEFINITION>|$NEW_TASK_DEF_ARN|g" appspec.yaml
-          echo "Updated appspec.yaml:"
-          cat appspec.yaml
-          
-      - name: Package deployment
-        run: |
-          # Package the existing appspec.yaml from the repository root into a ZIP file
-          zip -r deployment.zip appspec.yaml
-          aws s3 cp deployment.zip s3://eventfinder-bucket/deployment.zip      
-
-      - name: Deploy to AWS CodeDeploy
-        run: |
-          # Get deployment details
-          CLUSTER_NAME=$(aws cloudformation describe-stacks --region us-west-2 --stack-name ECS --query "Stacks[0].Outputs[?OutputKey=='ECSCluster'].OutputValue" --output text)
-          SERVICE_NAME=$(aws cloudformation describe-stacks --region us-west-2 --stack-name ECS --query "Stacks[0].Outputs[?OutputKey=='ECSService'].OutputValue" --output text)
-          CODEDEPLOY_APP=$(aws cloudformation describe-stacks --region us-west-2 --stack-name ECS --query "Stacks[0].Outputs[?OutputKey=='CodeDeployApplication'].OutputValue" --output text)
-          CODEDEPLOY_GROUP=$(aws cloudformation describe-stacks --region us-west-2 --stack-name ECS --query "Stacks[0].Outputs[?OutputKey=='CodeDeployDeploymentGroup'].OutputValue" --output text)
-          
-          
-          # Create deployment
-          aws deploy create-deployment \
-            --region us-west-2  \
-            --application-name $CODEDEPLOY_APP \
-            --deployment-group-name $CODEDEPLOY_GROUP \
-            --s3-location bucket=eventfinder-bucket,key=deployment.zip,bundleType=zip \
-            --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
-            --description "Deployment from GitHub Actions"
