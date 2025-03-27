@@ -26,6 +26,7 @@ target/
 src/main/resources/application-dev.yaml
 .github/workflows/anonyfile.yaml
 .gitignore
+src/main/java/com/giftedlabs/eventfinder/config/DatabaseConfig.java
 
 
 ### NetBeans ###

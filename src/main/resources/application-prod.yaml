@@ -13,6 +13,8 @@ cloud:
     credentials:
       access-key: ${AWS_ACCESS_KEY_ID}
       secret-key: ${AWS_SECRET_ACCESS_KEY}
+      use-default-aws-credentials-chain: true
+
     region:
       static: ${AWS_REGION}
     s3:
@@ -25,3 +27,10 @@ logging:
     root: INFO # Set logging level to INFO for production
     org.springframework.web: WARN
     com.giftedlabs.eventfinder: DEBUG # App-specific logging level
+
+app:
+  db:
+    use-secrets-manager: true
+    secret-name: ${DB_SECRET_NAME}
+    jdbc-url-prefix: jdbc:postgresql://
+
