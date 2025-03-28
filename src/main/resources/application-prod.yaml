@@ -8,7 +8,7 @@ spring:
     driver-class-name: org.postgresql.Driver
 
   config:
-    import: aws-secretsmanager:prod/eventfinder/secrets
+    import: aws-secretsmanager:local/eventfinder
 
 cloud:
   aws:
