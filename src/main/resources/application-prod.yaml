@@ -28,9 +28,4 @@ logging:
     org.springframework.web: WARN
     com.giftedlabs.eventfinder: DEBUG # App-specific logging level
 
-app:
-  db:
-    use-secrets-manager: true
-    secret-name: ${DB_SECRET_NAME}
-    jdbc-url-prefix: jdbc:postgresql://
 
