@@ -35,7 +35,7 @@ public class S3Service {
     private String bucketName;
 
     // Define your custom URL prefix, e.g., your S3 public URL or custom domain
-    private static final String CUSTOM_URL_PREFIX = "https://eventfinder-bucket.s3.amazonaws.com";
+    private static final String CUSTOM_URL_PREFIX = "https://eventfinder-bucket-eu.s3.amazonaws.com";
 
 
     public String uploadFile(MultipartFile file) throws IOException {
