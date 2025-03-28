@@ -7,13 +7,14 @@ spring:
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
+  config:
+    import: aws-secretsmanager:prod/eventfinder/secrets
 
 cloud:
   aws:
     credentials:
       access-key: ${AWS_ACCESS_KEY_ID}
       secret-key: ${AWS_SECRET_ACCESS_KEY}
-      use-default-aws-credentials-chain: true
 
     region:
       static: ${AWS_REGION}
