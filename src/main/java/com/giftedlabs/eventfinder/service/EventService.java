@@ -5,6 +5,7 @@ import com.giftedlabs.eventfinder.dto.EventDTO;
 import com.giftedlabs.eventfinder.dto.LocationSearchDTO;
 import com.giftedlabs.eventfinder.model.Event;
 import com.giftedlabs.eventfinder.model.enums.EventCategory;
+import com.giftedlabs.eventfinder.model.enums.EventState;
 import com.giftedlabs.eventfinder.repository.EventRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -49,7 +50,7 @@ public class EventService {
 
     public EventDTO createEvent(EventDTO eventDTO) {
         Event event = convertToEntity(eventDTO);
-        event.setIsActive(true);
+        event.setEventState(EventState.PUBLISHED);
         Event savedEvent = eventRepository.save(event);
         log.info("From Service Class {}",savedEvent.getImageUrl());
         return convertToDTO(savedEvent);

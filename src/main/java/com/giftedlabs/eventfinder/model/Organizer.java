@@ -25,7 +25,6 @@ public class Organizer extends User{
     private VerificationStatus verificationStatus;
 
     @OneToMany(mappedBy = "organizer", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "organizer_id")
     @JsonManagedReference
     private List<Event> events;
 }

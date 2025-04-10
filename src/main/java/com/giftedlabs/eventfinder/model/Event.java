@@ -2,6 +2,7 @@ package com.giftedlabs.eventfinder.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.giftedlabs.eventfinder.model.enums.EventCategory;
+import com.giftedlabs.eventfinder.model.enums.EventState;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -11,6 +12,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "events")
@@ -54,6 +57,12 @@ public class Event {
     @Enumerated(EnumType.STRING)
     private EventCategory category;
 
-    private Boolean isActive;
+    @Enumerated(EnumType.ORDINAL)
+    private EventState eventState;
+
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<Registration> participants = new ArrayList<>();
+
+    private Boolean isTicketRequired;
 
 }
