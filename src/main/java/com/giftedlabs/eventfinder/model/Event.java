@@ -1,5 +1,6 @@
 package com.giftedlabs.eventfinder.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.giftedlabs.eventfinder.model.enums.EventCategory;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -35,34 +36,23 @@ public class Event {
     @NotNull(message = "Event end time is required")
     private LocalDateTime endTime;
 
-    @NotBlank(message = "Event location is required")
-    private String location;
-
-    @NotBlank(message = "City is required")
-    private String city;
-
-    @NotBlank(message = "State is required")
-    private String state;
-
-    @NotBlank(message = "Country is required")
-    private String country;
+    @ManyToOne
+    @JoinColumn(name = "venue_id")
+    private Venue venue;
 
     @Column(length = 512)
     private String imageUrl;
 
-    private String organizerName;
-
-    private String organizerContact;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "organizer_id")
+    @JsonBackReference
+    private Organizer organizer;
 
     @NotNull(message = "Event capacity is required")
     private Integer capacity;
 
     @Enumerated(EnumType.STRING)
     private EventCategory category;
-
-    private Double latitude;
-
-    private Double longitude;
 
     private Boolean isActive;
 
