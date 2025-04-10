@@ -1,20 +1,23 @@
 package com.giftedlabs.eventfinder.model;
 
+import com.giftedlabs.eventfinder.model.enums.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.NaturalId;
 
 
 @Data
 @Inheritance(strategy = InheritanceType.JOINED)
 @Entity
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "users")
 public class User {
 
     @Id
@@ -35,4 +38,6 @@ public class User {
     private Role role;
 
     private String profilePicture;
+
+    private String password;
 }

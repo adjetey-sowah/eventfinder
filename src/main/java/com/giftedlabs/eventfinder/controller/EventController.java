@@ -3,7 +3,7 @@ package com.giftedlabs.eventfinder.controller;
 
 import com.giftedlabs.eventfinder.dto.EventDTO;
 import com.giftedlabs.eventfinder.dto.LocationSearchDTO;
-import com.giftedlabs.eventfinder.model.EventCategory;
+import com.giftedlabs.eventfinder.model.enums.EventCategory;
 import com.giftedlabs.eventfinder.service.EventService;
 import com.giftedlabs.eventfinder.service.S3Service;
 import jakarta.validation.Valid;
@@ -17,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 

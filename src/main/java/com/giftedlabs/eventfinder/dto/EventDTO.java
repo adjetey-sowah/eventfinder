@@ -1,6 +1,6 @@
 package com.giftedlabs.eventfinder.dto;
 
-import com.giftedlabs.eventfinder.model.EventCategory;
+import com.giftedlabs.eventfinder.model.enums.EventCategory;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

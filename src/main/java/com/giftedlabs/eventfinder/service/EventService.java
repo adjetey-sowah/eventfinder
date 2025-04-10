@@ -4,7 +4,7 @@ package com.giftedlabs.eventfinder.service;
 import com.giftedlabs.eventfinder.dto.EventDTO;
 import com.giftedlabs.eventfinder.dto.LocationSearchDTO;
 import com.giftedlabs.eventfinder.model.Event;
-import com.giftedlabs.eventfinder.model.EventCategory;
+import com.giftedlabs.eventfinder.model.enums.EventCategory;
 import com.giftedlabs.eventfinder.repository.EventRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 
-import java.awt.print.Pageable;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;

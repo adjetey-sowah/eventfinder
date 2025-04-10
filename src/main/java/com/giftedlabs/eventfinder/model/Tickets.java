@@ -1,5 +1,7 @@
 package com.giftedlabs.eventfinder.model;
 
+import com.giftedlabs.eventfinder.model.enums.TicketStatus;
+import com.giftedlabs.eventfinder.model.enums.TicketType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Builder
@@ -18,8 +21,8 @@ import java.time.LocalDateTime;
 public class Tickets{
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private Long id;
+    @GeneratedValue
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "event_id")

@@ -1,5 +1,6 @@
 package com.giftedlabs.eventfinder.model;
 
+import com.giftedlabs.eventfinder.model.enums.EventCategory;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

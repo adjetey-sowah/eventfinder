@@ -2,7 +2,7 @@ package com.giftedlabs.eventfinder.repository;
 
 
 import com.giftedlabs.eventfinder.model.Event;
-import com.giftedlabs.eventfinder.model.EventCategory;
+import com.giftedlabs.eventfinder.model.enums.EventCategory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
