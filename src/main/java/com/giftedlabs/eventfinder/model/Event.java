@@ -66,20 +66,4 @@ public class Event {
 
     private Boolean isActive;
 
-    @Entity
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Table(name = "venues")
-    public static class Venue {
-
-        @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long id;
-
-        private String name;
-
-        private Integer popularity;
-    }
 }
